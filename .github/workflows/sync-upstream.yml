@@ -1,5 +1,8 @@
 name: Sync with Upstream Repository
 
+permissions:
+  contents: write
+
 on:
   # 允许手动触发
   workflow_dispatch:
@@ -36,6 +39,14 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
+
+    - name: Configure push remote with PAT (if provided)
+      if: ${{ secrets.REPO_PUSH_TOKEN != '' }}
+      env:
+        REPO_PUSH_TOKEN: ${{ secrets.REPO_PUSH_TOKEN }}
+      run: |
+        # Replace origin URL so push uses the provided PAT (must have repo scope)
+        git remote set-url origin https://x-access-token:${REPO_PUSH_TOKEN}@github.com/${{ github.repository }}.git
 
     - name: Add upstream remote
       run: |
